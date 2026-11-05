@@ -1,144 +1,254 @@
-# 🚦 CivicTrack-AI
-### AI-Powered Civic Road Infrastructure Monitoring & Safe Journey Platform
+# 🚦 CivicTracker
+### AI-Powered Civic Issue Reporting, Road Infrastructure Monitoring & Safe Journey Platform
+
+CivicTracker is an intelligent civic technology platform designed to bridge the gap between citizens and municipal authorities. It enables people to report road infrastructure problems, analyze their severity using AI-assisted techniques, monitor issue resolution, and plan safer journeys.
+
+The platform combines **Artificial Intelligence, Geographic Information Systems (GIS), Web Development, and Civic Engagement** to create a smarter and safer urban environment.
 
 ---
 
-## 🌟 Overview
+## 🌟 Key Features
 
-**CivicTrack-AI** is an intelligent civic road infrastructure monitoring and smart commuter safety platform. It bridges the gap between road users and municipal authorities by combining:
+### 1. 🛣️ Smart Road Issue Reporting
+- Report potholes, road cracks, waterlogging, open manholes, broken guardrails and streetlight failures.
+- Upload images of damaged infrastructure.
+- Pinpoint issue locations using an interactive map.
+- Automatically identify geographical locations through reverse geocoding.
 
-1. **Crowdsourced Hazard Reporting:** Citizens report potholes, waterlogging, open manholes, broken guardrails, and lighting outages with automatic reverse geocoding and interactive map pin-dropping.
-2. **AI-Driven Severity Assessment:** Computer vision texture/edge analysis and contextual NLP evaluate the structural risk of reported defects, assigning confidence-backed priority levels (`High`, `Medium`, `Low`).
-3. **OpenStreetMap GIS Telemetry:** Interactive Leaflet.js map with official OpenStreetMap tiles centered on Coimbatore, Tamil Nadu (11.0168, 76.9558), featuring a **"Detect My Location"** GPS trigger.
-4. **Severity-Based Road Issue Markers:**
-   - 🔴 **Red:** High severity
-   - 🟠 **Orange:** Medium severity
-   - 🟡 **Yellow:** Low severity
-   - 🟢 **Green:** Resolved / Completed reports
-5. **Closed-Loop Authority Governance:** A dedicated municipal portal enables state PWD and city traffic departments to track, triage, and update defect statuses (`Pending`, `In Progress`, `Completed`) with timestamped audit notes.
-6. **Safe Journey Planner:** Commuters calculate driving routes between any two points. The platform scans a 1.2 km buffer corridor along the route, correlates reported hazards, and displays safety risk levels, traffic estimations, toll costs, and safer alternative bypasses.
+### 2. 🤖 AI-Assisted Severity Assessment
+- Analyze reported road issues using image texture and edge-based analysis.
+- Evaluate contextual descriptions using heuristic NLP techniques.
+- Generate severity scores and priority classifications.
+- Categorize reports into High, Medium and Low priority levels.
+
+### 3. 🗺️ Interactive GIS Dashboard
+- Interactive maps powered by Leaflet.js and OpenStreetMap.
+- Visualize reported road hazards using severity-based markers.
+- Detect current location using browser GPS permissions.
+- View issue details, images, severity and resolution status.
+
+### 4. 🏛️ Authority Management Portal
+- Dedicated dashboard for municipal authorities.
+- View and manage citizen-submitted complaints.
+- Update issue statuses: Pending, In Progress and Completed.
+- Maintain timestamped authority response notes.
+
+### 5. 🚗 Safe Journey Planner
+- Calculate routes between selected locations.
+- Identify reported hazards along the route.
+- Analyze road safety risks using nearby issue reports.
+- Display route information, estimated traffic and toll information where available.
+- Support safer alternative route suggestions.
+
+### 6. 👥 Citizen Engagement
+- Public civic issue feed.
+- Community comments and discussions.
+- Citizen reporting and issue tracking.
+- Improved transparency between citizens and authorities.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology |
-| :--- | :--- |
-| **Frontend** | HTML5, Modern CSS3 (Dark Glassmorphic Cyber Theme), Vanilla JavaScript (ES6+) |
-| **Backend** | Python Flask (RESTful Architecture, Session Auth) |
-| **Database** | SQLite3 with Foreign Keys & Constraint Checking |
-| **Maps & GIS** | Leaflet.js with official OpenStreetMap tiles (`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`), Nominatim Geocoding, OSRM Routing Engine (No paid Google Maps API keys required) |
-| **AI Severity Engine** | Modular Vision & NLP Analyzer (`Pillow` Texture/Edge variance + Heuristic Semantics) + Google Gemini API Multi-Modal Adapter Hook |
-| **Icons & Fonts** | FontAwesome 6, Plus Jakarta Sans, JetBrains Mono |
+| Layer | Technologies |
+|---|---|
+| Frontend | HTML5, CSS3, JavaScript |
+| Backend | Python, Flask |
+| Database | SQLite3 |
+| Mapping | Leaflet.js, OpenStreetMap |
+| Geocoding | Nominatim |
+| Routing | OSRM |
+| AI Analysis | Python, Pillow, heuristic NLP |
+| API Integration | Google Gemini API adapter |
+| Testing | Python, Flask Test Client |
 
 ---
 
-## 📂 Project Architecture
+## 🏗️ Project Architecture
 
-```
-roadintel-ai/
-├── app.py                  # Flask Application, routing, sessions, RESTful APIs
-├── models.py               # SQLite Schema, ORM helpers, auth, queries
-├── ai_engine.py            # Modular AI priority engine (Heuristic CV + Gemini Adapter)
-├── route_engine.py         # Safe Journey Planner, corridor buffer & risk calculation
-├── seed_data.py            # Database initializer & generator for realistic road hazard SVG graphics
-├── test_app.py             # End-to-end test suite
-├── run.bat / run.ps1       # 1-Click launcher scripts for Flask server
-├── test.bat / test.ps1     # 1-Click launcher scripts for test suite
-├── requirements.txt        # Python dependencies
-├── README.md               # Documentation & user guide
+```text
+CivicTracker/
+│
+├── app.py
+├── models.py
+├── ai_engine.py
+├── route_engine.py
+├── seed_data.py
+├── requirements.txt
+├── README.md
 │
 ├── static/
 │   ├── css/
-│   │   ├── main.css        # Dark theme, layout, hero, typography, gradients
-│   │   ├── components.css  # Cards, buttons, badges, tables, comments, modals
-│   │   └── map.css         # Leaflet styling, severity markers, route polyline
+│   │   ├── main.css
+│   │   ├── components.css
+│   │   └── map.css
+│   │
 │   ├── js/
-│   │   ├── main.js         # Alerts, toasts, modals, demo credential helpers
-│   │   ├── map-utils.js    # Leaflet OpenStreetMap engine, GPS tracking, markers & popups
-│   │   ├── feed.js         # Dynamic feed rendering, live filtering, AJAX comments
-│   │   ├── report.js       # Media upload, sample presets, click-to-pin, AI preview
-│   │   ├── authority.js    # Authority dashboard status updater & response notes
-│   │   └── planner.js      # Safe Journey Planner, route geometry & hazard overlay
-│   └── uploads/            # Uploaded photos & realistic road hazard visuals
+│   │   ├── main.js
+│   │   ├── map-utils.js
+│   │   ├── feed.js
+│   │   ├── report.js
+│   │   ├── authority.js
+│   │   └── planner.js
+│   │
+│   └── uploads/
 │
-└── templates/
-    ├── base.html           # Universal layout, dark navbar, footer, about modal
-    ├── index.html          # Hero section, platform KPIs, GIS hazard map & live feed
-    ├── login.html          # Glassmorphic auth card, role selector, demo autofill
-    ├── dashboard.html      # Citizen dashboard, live map widget, user reports, recent journeys
-    ├── report.html         # Multi-modal report form with live AI diagnostic preview
-    ├── report_detail.html  # High-res photo, AI diagnostic card, authority logs, comments
-    ├── authority.html      # Authority command center, filterable table, status modal
-    └── journey_planner.html# Interactive route map, corridor hazards, tolls, traffic
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   ├── login.html
+│   ├── dashboard.html
+│   ├── report.html
+│   ├── report_detail.html
+│   ├── authority.html
+│   └── journey_planner.html
+│
+├── test_app.py
+├── test_live_server.py
+├── run.bat
+├── run.ps1
+├── test.bat
+└── test.ps1
 ```
 
 ---
 
-## 🗺️ Map & GPS Implementation Details
+## ⚙️ Installation and Setup
 
-### 1. OpenStreetMap Integration
-- **Official OSM Tile Layer:** `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`
-- **Zero Paid Dependencies:** No Google Maps API key required.
-- **Center:** Default center set to **Coimbatore, Tamil Nadu (`11.0168, 76.9558`)**.
-- **Interactive Controls:** Zoom in/out buttons, mouse dragging, touch pinch-to-zoom, and scroll wheel navigation.
-- **Responsive Layout:** Automatically scales on mobile and desktop viewports, with dynamic `invalidateSize()` listeners.
+### Prerequisites
+- Python 3.10 or later
+- Git
+- A modern web browser
 
-### 2. Severity Marker Color Legend
-- 🔴 **Red Pin:** High Priority (`priority = 'High'`)
-- 🟠 **Orange Pin:** Medium Priority (`priority = 'Medium'`)
-- 🟡 **Yellow Pin:** Low Priority (`priority = 'Low'`)
-- 🟢 **Green Pin:** Resolved / Repaired Defect (`status = 'Completed'`)
+### 1. Clone the Repository
 
-### 3. Marker Click Popups
-Every marker displays:
-- **Report ID** (`#1`)
-- **Road Issue Type** (Category, e.g., Pothole, Waterlogging)
-- **Severity** (Priority level and 0–100 score)
-- **Description** (Citizen-submitted details)
-- **Location** (Human-readable locality name)
-- **Report Status** (`Pending`, `In Progress`, `Completed`)
-- **Uploaded Image** (Thumbnail image preview)
+```bash
+git clone https://github.com/Nethra0704/CivicTracker.git
+```
 
-### 4. "Detect My Location" Feature
-- Prominent button on the map toolbar: **"Detect My Location"**.
-- Queries browser `navigator.geolocation` API with high accuracy mode.
-- Centers map to the user's coordinates with zoom level 15, drops a glowing pulsing location marker, reverse geocodes the street address, and handles permission denials gracefully.
+### 2. Navigate to the Project
 
----
+```bash
+cd CivicTracker
+```
 
-## ⚙️ Setup & Execution Instructions
+### 3. Create a Virtual Environment
 
-### 1. Run via Quick Scripts (Easiest)
-In your PowerShell or Command Prompt inside the project folder:
+```bash
+python -m venv venv
+```
+
+### 4. Activate the Environment
+
+Windows PowerShell:
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+### 5. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 6. Run the Application
+
+Windows PowerShell:
+
 ```powershell
 .\run.ps1
 ```
-*(or double-click `run.bat`)*
 
-### 2. Run the Test Suite
-```powershell
-.\test.ps1
-```
-*(or run `python test_app.py`)*
+Alternatively:
 
-### 3. Re-seed the Database (Optional)
-```powershell
-python seed_data.py
+```bash
+python app.py
 ```
 
-### 4. Open the Web Application
-Open your browser and navigate to:  
-👉 **`http://127.0.0.1:5000`**
+### 7. Open in Browser
+
+```text
+http://127.0.0.1:5000
+```
 
 ---
 
-## 🔑 Pre-Seeded Demo Accounts
+## 🧪 Testing
 
-| Role | Username | Password | Access Capabilities |
-| :--- | :--- | :--- | :--- |
-| **Citizen** | `citizen1` | `password123` | Report hazards, plan journeys, comment on feeds |
-| **Authority** | `authority_pwd` | `admin123` | Access Authority Portal, update defect status & notes |
-| **Admin** | `admin` | `admin123` | Full system access across all portals |
+Run the application test suite using:
 
-*(Use the 1-click demo buttons on `/login` for instantaneous access!)*
+```powershell
+.\test.ps1
+```
+
+Alternatively:
+
+```bash
+python test_app.py
+```
+
+---
+
+## 🌍 Mapping and Location Services
+
+CivicTracker uses open-source mapping technologies:
+
+- **Leaflet.js:** Interactive map visualization.
+- **OpenStreetMap:** Map tiles and geographical data.
+- **Nominatim:** Location search and reverse geocoding.
+- **OSRM:** Route calculation and navigation data.
+
+The mapping implementation does not require a paid Google Maps API key.
+
+---
+
+## 🎯 Project Objectives
+
+- Improve communication between citizens and civic authorities.
+- Encourage faster identification of road infrastructure problems.
+- Use AI-assisted analysis to prioritize critical road hazards.
+- Improve commuter awareness of potentially unsafe routes.
+- Promote transparent and technology-driven civic management.
+
+---
+
+## 🔮 Future Enhancements
+
+- Advanced deep learning models for road damage detection.
+- Real-time AI image classification.
+- Mobile application integration.
+- Live traffic data integration.
+- Government authority API integration.
+- Push notifications for issue updates.
+- Community-based report verification.
+
+---
+
+## 👩‍💻 Developed By
+
+**Nethra K**
+
+B.E. Computer Science and Engineering (Internet of Things)
+
+Sri Krishna College of Engineering and Technology (SKCET)
+
+Coimbatore, Tamil Nadu, India.
+
+**GitHub:** https://github.com/Nethra0704
+
+---
+
+## 📌 Project Information
+
+**Project Name:** CivicTracker
+
+**Domain:** Artificial Intelligence | Smart Cities | Civic Technology | Road Safety
+
+**Category:** Full-Stack Web Application
+
+**Development Status:** Prototype
+
+---
+
+*Building smarter roads and safer communities through technology.* 🚦
