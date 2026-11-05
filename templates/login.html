@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - CivicTrack-AI{% endblock %}
+
+{% block extra_head %}
+<style>
+  .auth-wrapper {
+    min-height: calc(100vh - var(--nav-height) - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    position: relative;
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass-glow);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-lg), var(--glow-cyan);
+    position: relative;
+    z-index: 1;
+  }
+  .auth-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-glass);
+    margin-bottom: 26px;
+  }
+  .auth-tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .auth-tab-btn.active {
+    color: var(--accent-cyan);
+    border-bottom-color: var(--accent-cyan);
+  }
+  .demo-accounts-box {
+    margin-top: 24px;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card animate-fade-in">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div class="brand-icon" style="margin: 0 auto 12px; width: 48px; height: 48px; font-size: 1.5rem;">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <h2 style="font-size: 1.6rem; font-weight: 800; color: #fff;">CivicTrack-AI Access</h2>
+      <p style="color: var(--text-muted); font-size: 0.88rem;">Civic Road Safety & Authority Response Platform</p>
+    </div>
+
+    <!-- Tabs for Login vs Register -->
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">Register Citizen</button>
+    </div>
+
+    <!-- Sign In Form -->
+    <form id="loginForm" method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label class="form-label" for="loginUsername">Username</label>
+        <div style="position: relative;">
+          <input type="text" name="username" id="loginUsername" class="form-control" placeholder="Enter username" required autocomplete="username">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="loginPassword">Password</label>
+        <input type="password" name="password" id="loginPassword" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+        <i class="fas fa-arrow-right-to-bracket"></i> Sign In to Account
+      </button>
+    </form>
+
+    <!-- Register Form (hidden by default) -->
+    <form id="registerForm" method="POST" action="{{ url_for('register') }}" style="display: none;">
+      <div class="form-group">
+        <label class="form-label" for="regUsername">Choose Username</label>
+        <input type="text" name="username" id="regUsername" class="form-control" placeholder="e.g. rahul_s" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regPassword">Create Password</label>
+        <input type="password" name="password" id="regPassword" class="form-control" placeholder="Minimum 6 characters" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regRole">Role</label>
+        <select name="role" id="regRole" class="form-control">
+          <option value="Citizen">Citizen / Commuter</option>
+          <option value="Authority">Road Safety Authority / Municipal Officer</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </form>
+
+    <!-- Quick-Fill Demo Pill Bar -->
+    <div class="demo-accounts-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">⚡ 1-Click Demo Logins:</span>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillDemoCredentials('citizen1', 'password123')">
+          👤 Citizen
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillDemoCredentials('authority_pwd', 'admin123')">
+          🏛️ Authority
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillDemoCredentials('admin', 'admin123')">
+          👑 Admin
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function switchAuthTab(tab) {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const tabLoginBtn = document.getElementById('tabLoginBtn');
+    const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+
+    if (tab === 'login') {
+      loginForm.style.display = 'block';
+      registerForm.style.display = 'none';
+      tabLoginBtn.classList.add('active');
+      tabRegisterBtn.classList.remove('active');
+    } else {
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'block';
+      tabRegisterBtn.classList.add('active');
+      tabLoginBtn.classList.remove('active');
+    }
+  }
+</script>
+{% endblock %}

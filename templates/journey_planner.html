@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Safe Journey Planner - CivicTrack-AI{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 24px;">
+
+  <!-- Header -->
+  <div style="margin-bottom: 24px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom: 6px;">
+      <span class="badge badge-status-inprogress"><span class="badge-dot"></span> Hazard-Aware Geospatial Routing</span>
+      <span style="font-size:0.85rem; color:var(--text-muted);">OSRM + Crowdsourced Defect GIS</span>
+    </div>
+    <h1 style="font-size: 2.2rem; font-weight: 800; color: #fff;">
+      Safe Journey Planner
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+      Plan travel routes with automated hazard detection, traffic condition estimates, toll charges, and safety risk levels.
+    </p>
+  </div>
+
+  <!-- Main Planner Split Grid -->
+  <div class="planner-grid">
+    
+    <!-- Left Column: Controls & Journey Insights -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Input Controls Card -->
+      <div class="planner-controls-card">
+        <form id="journeyPlannerForm">
+          <div class="route-input-group">
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">
+                <span style="color:#10b981;">🟢</span> Origin Location
+              </label>
+              <input type="text" id="plannerStartInput" class="form-control" placeholder="e.g. Gandhipuram, Coimbatore" value="Gandhipuram, Coimbatore" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label class="form-label">
+                <span style="color:#3b82f6;">🏁</span> Destination
+              </label>
+              <input type="text" id="plannerDestInput" class="form-control" placeholder="e.g. Peelamedu, Coimbatore" value="Peelamedu, Coimbatore" required>
+            </div>
+          </div>
+
+          <button type="submit" id="planJourneySubmitBtn" class="btn btn-primary" style="width: 100%;">
+            <span>⚡</span> Analyze Safe Route
+          </button>
+        </form>
+
+        <!-- Quick 1-Click Route Presets -->
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">
+            ⚡ Quick Route Presets:
+          </span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 10px;"
+                    data-route-preset
+                    data-start="Gandhipuram, Coimbatore"
+                    data-dest="Peelamedu, Coimbatore">
+              Gandhipuram &rarr; Peelamedu
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 10px;"
+                    data-route-preset
+                    data-start="RS Puram, Coimbatore"
+                    data-dest="Coimbatore Airport, Coimbatore">
+              RS Puram &rarr; Airport
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 10px;"
+                    data-route-preset
+                    data-start="Ukkadam, Coimbatore"
+                    data-dest="Singanallur, Coimbatore">
+              Ukkadam &rarr; Singanallur
+            </button>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="plannerLoadingState" style="display: none; padding: 30px; text-align: center; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-glass);">
+        <i class="fas fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-cyan);"></i>
+        <h4 style="color: #fff; margin-top: 12px;">Correlating Route with Road Hazards...</h4>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Scanning 1.2km buffer corridor for potholes and waterlogging.</p>
+      </div>
+
+      <!-- Results & Journey Intelligence Panel (Hidden until computed) -->
+      <div id="plannerResultsPanel" class="route-insights-panel" style="display: none;">
+        
+        <!-- Safety Risk Assessment Card -->
+        <div id="routeRiskCard" class="risk-summary-card risk-card-moderate">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Route Safety Rating</span>
+            <span id="routeRiskBadge" class="badge badge-priority-medium">Moderate Risk</span>
+          </div>
+          <div id="routeRiskDesc" style="font-size: 0.95rem; font-weight: 600; color: #fff;">
+            2 road hazards detected along this corridor. Drive carefully.
+          </div>
+        </div>
+
+        <!-- Metric Insights 2x2 Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="insight-metric-box">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Total Distance</div>
+              <div id="routeDistanceMetric" style="font-size: 1.35rem; font-weight: 800; color: #fff;">-- km</div>
+            </div>
+            <span style="font-size: 1.3rem;">📏</span>
+          </div>
+
+          <div class="insight-metric-box">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Est. Travel Time</div>
+              <div id="routeTimeMetric" style="font-size: 1.35rem; font-weight: 800; color: #fff;">-- mins</div>
+            </div>
+            <span style="font-size: 1.3rem;">⏱️</span>
+          </div>
+
+          <div class="insight-metric-box">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Traffic Condition</div>
+              <div id="routeTrafficMetric" style="font-size: 1.15rem; font-weight: 800; color: var(--warning);">Moderate</div>
+            </div>
+            <span style="font-size: 1.3rem;">🚦</span>
+          </div>
+
+          <div class="insight-metric-box">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Toll Gate Plazas</div>
+              <div id="routeTollMetric" style="font-size: 1.05rem; font-weight: 800; color: #fff;">0 Free</div>
+            </div>
+            <span style="font-size: 1.3rem;">🛣️</span>
+          </div>
+        </div>
+
+        <!-- Alternative Safe Route Recommendation -->
+        <div id="routeAltRecommendationBox" class="alt-route-box" style="display: none;">
+          <div class="alt-route-header" id="routeAltTitle">
+            <span>🛡️</span> Recommended Safe Bypass
+          </div>
+          <div class="alt-route-desc" id="routeAltDesc">
+            Bypass via Outer Arterial road avoids high-severity pothole clusters.
+          </div>
+        </div>
+
+        <!-- Detected Hazards Along Corridor -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 16px;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 8px; display: flex; justify-content: space-between;">
+            <span>⚠️ Hazards Along Corridor:</span>
+          </div>
+          <div class="route-hazards-list" id="routeHazardsList">
+            <!-- Injected by JavaScript -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Right Column: Interactive Map -->
+    <div>
+      <div class="map-card-container">
+        <div id="plannerMap" class="map-wrapper map-wrapper-large"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+        <span>🟢 Start • 🏁 Destination • ⚠️ Active Road Hazards</span>
+        <span>Green = Safe Route • Amber = Moderate • Red = Critical Risk</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/planner.js') }}"></script>
+{% endblock %}

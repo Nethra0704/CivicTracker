@@ -1,0 +1,364 @@
+/* ===================================================================
+   CivicTrack-AI - Interactive Map & Safe Journey Planner Styling
+   Leaflet OpenStreetMap Integration, Custom Severity Markers & Popups
+   =================================================================== */
+
+.map-card-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  width: 100%;
+}
+
+.map-wrapper {
+  width: 100%;
+  height: 520px;
+  min-height: 420px;
+  position: relative;
+  z-index: 1;
+}
+
+.map-wrapper-large {
+  height: 640px;
+  min-height: 480px;
+}
+
+.map-wrapper-picker {
+  height: 340px;
+  min-height: 280px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+  margin-top: 10px;
+}
+
+/* Ensure Leaflet Container fills its wrapper completely */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  background: #0f172a !important;
+  font-family: inherit;
+  z-index: 10;
+}
+
+/* OpenStreetMap Tiles - Clean, Crisp & High Contrast (No aggressive invert filter) */
+.leaflet-tile {
+  /* Subtle contrast optimization without blacking out map tiles */
+  filter: contrast(1.05) brightness(0.98);
+}
+
+/* Leaflet Zoom and Control Styling */
+.leaflet-control-zoom {
+  border: 1px solid var(--border-glass-glow) !important;
+  border-radius: var(--radius-sm) !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.leaflet-control-zoom a {
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-glass) !important;
+  transition: var(--transition);
+}
+
+.leaflet-control-zoom a:hover {
+  background: rgba(6, 182, 212, 0.25) !important;
+  color: #fff !important;
+}
+
+/* Map Popups */
+.leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.97) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-glass-glow) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(14px) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.45 !important;
+  max-width: 300px;
+}
+
+.leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.97) !important;
+  border: 1px solid var(--border-glass-glow) !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 8px !important;
+  font-size: 1.1rem !important;
+}
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: #fff !important;
+}
+
+/* Custom Marker Pins - Severity Based Colors */
+.custom-pin-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  border: 2.5px solid #ffffff;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.pin-icon:hover {
+  transform: scale(1.15);
+}
+
+/* 1. Red: High Severity */
+.pin-high {
+  background: #ef4444;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.8), 0 4px 10px rgba(0, 0, 0, 0.5);
+  animation: pulseHigh 1.8s infinite;
+}
+
+/* 2. Orange: Medium Severity */
+.pin-medium {
+  background: #f97316;
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.75), 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* 3. Yellow: Low Severity */
+.pin-low {
+  background: #eab308;
+  color: #000 !important;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.7), 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* 4. Green: Resolved / Completed Reports */
+.pin-resolved {
+  background: #10b981;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.8), 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* 5. User GPS Location Pin */
+.pin-user-location {
+  background: #0284c7;
+  border-color: #38bdf8;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.9);
+  animation: pulseUser 1.6s infinite;
+}
+
+@keyframes pulseHigh {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+  70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@keyframes pulseUser {
+  0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.8); }
+  70% { box-shadow: 0 0 0 14px rgba(56, 189, 248, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+
+/* Popup Inside Formatting */
+.report-marker-popup {
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-thumb-wrap {
+  width: 100%;
+  height: 140px;
+  background: #020617;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.popup-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.popup-content-inner {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.popup-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.popup-report-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.popup-issue-type {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #fff;
+  line-height: 1.25;
+}
+
+.popup-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.popup-location-row {
+  font-size: 0.82rem;
+  color: #e2e8f0;
+  line-height: 1.35;
+}
+
+.popup-desc-row {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  max-height: 70px;
+  overflow-y: auto;
+}
+
+.popup-footer-row {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-glass);
+}
+
+/* Safe Journey Planner Layout */
+.planner-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 28px;
+  margin-top: 30px;
+}
+
+@media (max-width: 1024px) {
+  .planner-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.planner-controls-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.route-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.route-insights-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.insight-metric-box {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.risk-summary-card {
+  border-radius: var(--radius-md);
+  padding: 20px;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.risk-card-safe {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.risk-card-moderate {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.risk-card-danger {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.alt-route-box {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.alt-route-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.alt-route-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.route-hazards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.hazard-mini-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}

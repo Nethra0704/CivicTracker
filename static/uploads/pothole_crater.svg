@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="road" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1f2937"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <radialGradient id="hole" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#030712"/>
+      <stop offset="70%" stop-color="#1f2937"/>
+      <stop offset="100%" stop-color="#374151"/>
+    </radialGradient>
+    <linearGradient id="warningG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#road)"/>
+  <!-- Lane markings -->
+  <line x1="0" y1="250" x2="180" y2="250" stroke="#fbbf24" stroke-width="8" stroke-dasharray="25,15"/>
+  <line x1="620" y1="250" x2="800" y2="250" stroke="#fbbf24" stroke-width="8" stroke-dasharray="25,15"/>
+  <!-- Pothole crater -->
+  <ellipse cx="400" cy="270" rx="190" ry="110" fill="url(#hole)" stroke="#0f172a" stroke-width="6"/>
+  <path d="M 240 250 Q 280 200 370 210 Q 480 190 560 260 Q 530 330 420 360 Q 270 340 240 250 Z" fill="#090d16" opacity="0.9"/>
+  <!-- Fractures and cracks -->
+  <path d="M 230 240 L 160 210 L 120 230" stroke="#4b5563" stroke-width="4" fill="none"/>
+  <path d="M 570 270 L 660 300 L 710 280" stroke="#4b5563" stroke-width="4" fill="none"/>
+  <path d="M 410 370 L 430 430 L 400 460" stroke="#4b5563" stroke-width="4" fill="none"/>
+  <!-- AI Detection Box Overlay -->
+  <rect x="190" y="160" width="420" height="230" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="8,4" rx="10"/>
+  <rect x="190" y="125" width="230" height="32" fill="url(#warningG)" rx="6"/>
+  <text x="202" y="147" fill="#ffffff" font-family="Arial, sans-serif" font-weight="bold" font-size="14">AI: CRITICAL POTHOLE 96.4%</text>
+  <text x="400" y="470" fill="#9ca3af" font-family="sans-serif" font-size="14" text-anchor="middle">CivicTrack-AI Vision Telemetry • Avinashi Road</text>
+</svg>

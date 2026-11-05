@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CivicTrack-AI - Civic Infrastructure & Road Safety Platform{% endblock %}</title>
+  
+  <!-- Font & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="{{ url_for('index') }}" class="brand">
+        <div class="brand-icon">
+          <i class="fas fa-shield-halved"></i>
+        </div>
+        <span>CivicTrack<span class="brand-ai">AI</span></span>
+      </a>
+
+      <button class="mobile-nav-toggle" aria-label="Toggle navigation">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="{{ url_for('journey_planner') }}" class="nav-link {% if request.endpoint == 'journey_planner' %}active{% endif %}"><i class="fas fa-route"></i> Safe Journey</a></li>
+        <li><a href="{{ url_for('report_issue') }}" class="nav-link {% if request.endpoint == 'report_issue' %}active{% endif %}"><i class="fas fa-triangle-exclamation"></i> Report Issue</a></li>
+        
+        {% if current_user and current_user.role in ['Authority', 'Admin'] %}
+        <li><a href="{{ url_for('authority_dashboard') }}" class="nav-link {% if request.endpoint == 'authority_dashboard' %}active{% endif %}" style="color:var(--accent-cyan);"><i class="fas fa-building-columns"></i> Authority Portal</a></li>
+        {% endif %}
+
+        {% if current_user %}
+        <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}"><i class="fas fa-user-circle"></i> Dashboard</a></li>
+        {% endif %}
+
+        <li><a href="javascript:void(0)" class="nav-link" id="aboutModalTrigger"><i class="fas fa-circle-info"></i> About</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        {% if current_user %}
+          <div class="user-menu-pill">
+            <div class="user-avatar">{{ current_user.username[:1].upper() }}</div>
+            <div class="user-info-text">
+              <span class="user-name">{{ current_user.username }}</span>
+              <span class="user-role-label">{{ current_user.role }}</span>
+            </div>
+          </div>
+          <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm" title="Log out">
+            <i class="fas fa-arrow-right-from-bracket"></i>
+          </a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-arrow-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Toasts Container -->
+  <div class="toast-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="toast toast-{{ category }}">
+            <span>{% if category == 'success' %}✅{% elif category == 'danger' %}❌{% else %}ℹ️{% endif %}</span>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Body Content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- About Project Modal -->
+  <div class="modal-backdrop" id="aboutModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>🛡️</span> About CivicTrack-AI</h3>
+        <button class="btn btn-secondary btn-sm btn-icon" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">
+        <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px; color: var(--accent-cyan); font-size: 0.85rem; font-weight: 600;">
+          Civic Infrastructure & Intelligent Road Monitoring Platform
+        </div>
+        <p style="margin-bottom: 12px;">
+          <b>CivicTrack-AI</b> is an intelligent civic road infrastructure and smart travel safety platform designed to empower citizens to report road hazards and assist commuters in planning safer journeys.
+        </p>
+        <p style="margin-bottom: 12px;">
+          Using <b>Computer Vision & NLP</b>, incoming reports are instantly evaluated for structural severity, classified into High, Medium, or Low priority, and routed to road authorities for transparent resolution.
+        </p>
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 14px; margin-top: 14px;">
+          <h4 style="color: #fff; font-size: 0.85rem; margin-bottom: 6px;">Key Pillars:</h4>
+          <ul style="padding-left: 20px; font-size: 0.85rem;">
+            <li><b>Automated Severity Engine:</b> Evaluates road craters, waterlogging & obstacles with confidence scores.</li>
+            <li><b>Safe Journey Routing:</b> Live hazard buffer calculations, toll estimates & traffic risk indexing.</li>
+            <li><b>Authority Tracking:</b> Closed-loop governance with timestamped municipal response notes.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-logos">
+        <span>CivicTrack-AI</span> • 
+        <span>Civic Infrastructure & Safe Journey Telemetry</span> • 
+        <span>OpenStreetMap GIS</span>
+      </div>
+      <p>&copy; 2026 CivicTrack-AI. Built for safer, smarter, and more accountable roads across India.</p>
+    </div>
+  </footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Global App Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/map-utils.js') }}"></script>
+
+  <script>
+    // Bind about modal
+    const aboutBtn = document.getElementById('aboutModalTrigger');
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutBtn && aboutModal) {
+      aboutBtn.addEventListener('click', () => aboutModal.classList.add('open'));
+    }
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Issue Inspection #{{ report.id }} - CivicTrack-AI{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 24px; max-width: 1040px;">
+
+  <!-- Breadcrumbs & Actions -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <a href="{{ url_for('index') }}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-arrow-left"></i> Back to Live Feed
+    </a>
+    
+    <div style="display: flex; gap: 10px;">
+      <span class="badge badge-priority-{{ report.priority|lower }}">
+        <span class="badge-dot"></span> {{ report.priority }} Priority
+      </span>
+      <span class="badge badge-status-{{ report.status|lower|replace(' ', '') }}">
+        {{ report.status }}
+      </span>
+      {% if current_user and current_user.role in ['Authority', 'Admin'] %}
+      <a href="{{ url_for('authority_dashboard', search=report.location_name) }}" class="btn btn-outline-cyan btn-sm">
+        <i class="fas fa-pen-to-square"></i> Manage Status
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px;" class="report-detail-layout">
+    
+    <!-- Left Column: Hazard Image & AI Assessment -->
+    <div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px;">
+        <div style="position: relative; width: 100%; height: 380px; background: #000;">
+          <img src="{{ report.image_path or url_for('static', filename='uploads/pothole_crater.svg') }}" alt="{{ report.category }}" style="width: 100%; height: 100%; object-fit: contain;">
+          <div style="position: absolute; bottom: 16px; left: 16px; background: rgba(10, 14, 23, 0.85); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-glass); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent-cyan);">
+            AI Verification ID: #{{ report.id }}-RISK
+          </div>
+        </div>
+
+        <div style="padding: 24px;">
+          <div class="issue-category-tag">{{ report.category }} • Posted by {{ report.reporter_name }} on {{ report.created_at }}</div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 12px;">
+            <span>📍</span> {{ report.location_name }}
+          </h1>
+          <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem; margin-bottom: 16px;">
+            {{ report.description }}
+          </p>
+          <div style="font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+            Geo Coordinates: {{ report.latitude }}, {{ report.longitude }}
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Severity Breakdown Card -->
+      <div class="form-card" style="padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <span>🤖</span> AI Diagnostic Metrics
+          </h3>
+          <span class="badge badge-priority-{{ report.priority|lower }}">{{ report.priority }}</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div style="background: rgba(15, 23, 42, 0.7); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Severity Score</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #fff;">{{ report.severity_score }}<span style="font-size: 0.9rem; color: var(--text-muted);">/100</span></div>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.7); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Model Confidence</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-cyan);">{{ report.confidence_score }}%</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(6, 182, 212, 0.08); border-left: 3px solid var(--accent-cyan); padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.85rem; color: var(--text-primary);">
+          <b>Civic Impact:</b> Prioritized for high-speed corridor inspection due to two-wheeler tipping and suspension fracture risks.
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Authority History & Comments -->
+    <div>
+      
+      <!-- Authority Resolution Timeline -->
+      <div class="form-card" style="padding: 24px; margin-bottom: 24px;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+          <span>🏛️</span> Authority Action Timeline
+        </h3>
+
+        {% if updates|length == 0 %}
+          <div style="padding: 16px; background: rgba(15, 23, 42, 0.5); border-radius: var(--radius-sm); border: 1px dashed var(--border-glass); text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+            Report logged into municipal queue. Awaiting field inspection by divisional engineer.
+          </div>
+        {% else %}
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            {% for u in updates %}
+            <div style="padding: 14px; background: rgba(15, 23, 42, 0.7); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-cyan);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <b style="color: #fff; font-size: 0.85rem;">{{ u.authority_name }}</b>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">{{ u.update_time[:16] }}</span>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--accent-cyan); margin-bottom: 6px;">
+                Status changed: <b>{{ u.previous_status }}</b> &rarr; <b>{{ u.new_status }}</b>
+              </div>
+              {% if u.response_notes %}
+              <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+                "{{ u.response_notes }}"
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Real-Time Comments Discussion -->
+      <div class="form-card" style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <span>💬</span> Community & Authority Updates (<span id="detailCommentsCount">{{ comments|length }}</span>)
+          </h3>
+        </div>
+
+        <!-- Comments List -->
+        <div class="comment-list" id="commentsContainerList" style="margin: 0 0 20px;">
+          {% if comments|length == 0 %}
+            <p style="color:var(--text-muted); font-size:0.9rem; text-align:center; padding:20px;">
+              No comments yet. Share an on-site update or caution below!
+            </p>
+          {% else %}
+            {% for c in comments %}
+            <div class="comment-item {% if c.role in ['Authority', 'Admin'] %}authority-comment{% endif %} animate-fade-in">
+              <div class="comment-header">
+                <div class="comment-author">
+                  <span>{% if c.role == 'Authority' %}🏛️{% elif c.role == 'Admin' %}👑{% else %}👤{% endif %}</span>
+                  <span>{{ c.username }}</span>
+                  {% if c.role == 'Authority' %}
+                    <span class="badge badge-status-inprogress" style="font-size:0.65rem;">Authority Officer</span>
+                  {% elif c.role == 'Admin' %}
+                    <span class="badge badge-priority-high" style="font-size:0.65rem;">System Admin</span>
+                  {% endif %}
+                </div>
+                <div class="comment-time">{{ c.created_at }}</div>
+              </div>
+              <div class="comment-body">{{ c.comment }}</div>
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Post Comment Form -->
+        {% if current_user %}
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <textarea id="commentTextInput" class="form-control" rows="2" placeholder="Write an update, note repairs, or confirm road status..."></textarea>
+            <button type="button" id="postCommentBtn" class="btn btn-primary btn-sm" onclick="submitReportComment({{ report.id }})">
+              <i class="fas fa-paper-plane"></i> Post Comment
+            </button>
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 14px; background: rgba(15, 23, 42, 0.6); border-radius: var(--radius-sm); border: 1px dashed var(--border-glass);">
+            <a href="{{ url_for('login', next=request.url) }}" style="color: var(--accent-cyan); font-weight: 600; font-size: 0.9rem;">
+              Sign in to post comments or authority updates
+            </a>
+          </div>
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/feed.js') }}"></script>
+{% endblock %}

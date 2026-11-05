@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}CivicTrack-AI - Civic Infrastructure & Road Safety Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-bg-overlay"></div>
+  <div class="container hero-content">
+    <div class="hero-pill">
+      <span>🛡️</span> AI-Powered Civic Road Infrastructure Monitoring
+    </div>
+    <h1 class="hero-title">
+      Civic Road Safety & <span class="gradient-text">Smart Infrastructure Intelligence</span>
+    </h1>
+    <p class="hero-description">
+      Empowering citizens to report road hazards with automated computer vision assessment, 
+      providing authorities with real-time resolution telemetry, and guiding commuters along safer travel corridors.
+    </p>
+
+    <div class="hero-cta-group">
+      <a href="{{ url_for('report_issue') }}" class="btn btn-primary btn-lg">
+        <i class="fas fa-camera"></i> Report Road Hazard
+      </a>
+      <a href="{{ url_for('journey_planner') }}" class="btn btn-secondary btn-lg">
+        <i class="fas fa-map-location-dot"></i> Plan Safe Journey
+      </a>
+    </div>
+
+    <!-- Live Platform Metrics Ribbon -->
+    <div class="stats-ribbon">
+      <div class="stat-card">
+        <div class="stat-icon red"><i class="fas fa-triangle-exclamation"></i></div>
+        <div>
+          <div class="stat-number">{{ stats.high_priority }}</div>
+          <div class="stat-label">Critical High Priority Risks</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="fas fa-clock-rotate-left"></i></div>
+        <div>
+          <div class="stat-number">{{ stats.pending + stats.in_progress }}</div>
+          <div class="stat-label">Active / In Progress Issues</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon emerald"><i class="fas fa-circle-check"></i></div>
+        <div>
+          <div class="stat-number">{{ stats.completed }}</div>
+          <div class="stat-label">Resolved & Repaired Hazards</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon cyan"><i class="fas fa-users"></i></div>
+        <div>
+          <div class="stat-number">{{ stats.total_users }}</div>
+          <div class="stat-label">Civic Responders & Authorities</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main Feed & Live Map Section -->
+<section class="container" style="padding: 50px 24px;">
+  
+  <!-- Live Map Preview of Hazards -->
+  <div style="margin-bottom: 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px;">
+          <span>🗺️</span> Real-Time Road Hazard Geo-Map
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">
+          Interactive OpenStreetMap telemetry centered on Coimbatore, Tamil Nadu. Markers indicate severity (Red: High, Orange: Medium, Yellow: Low, Green: Resolved).
+        </p>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button type="button" id="detectLocationBtn" class="btn btn-outline-cyan btn-sm">
+          <i class="fas fa-location-crosshairs"></i> Detect My Location
+        </button>
+        <span class="badge badge-status-inprogress" style="font-size:0.8rem;"><span class="badge-dot"></span> OpenStreetMap</span>
+      </div>
+    </div>
+
+    <div class="map-card-container">
+      <div id="homeLiveMap" class="map-wrapper"></div>
+    </div>
+  </div>
+
+  <!-- Live Feed Header & Filters -->
+  <div class="feed-header">
+    <div>
+      <h2 class="feed-title">
+        <span>📡</span> Live Civic Road Issue Feed
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">
+        Crowdsourced reports analyzed and categorized by the CivicTrack-AI Engine.
+      </p>
+    </div>
+
+    <div class="filter-bar">
+      <!-- Search -->
+      <div class="search-input-wrap">
+        <span class="search-icon"><i class="fas fa-search"></i></span>
+        <input type="text" id="feedSearchInput" placeholder="Search location, road, district...">
+      </div>
+
+      <!-- Priority Filters -->
+      <div style="display:flex; gap:6px;">
+        <button class="filter-chip active" data-filter-priority="All">All Priority</button>
+        <button class="filter-chip" data-filter-priority="High">🔴 High</button>
+        <button class="filter-chip" data-filter-priority="Medium">🟡 Medium</button>
+        <button class="filter-chip" data-filter-priority="Low">🔵 Low</button>
+      </div>
+
+      <!-- Status Filters -->
+      <div style="display:flex; gap:6px;">
+        <button class="filter-chip active" data-filter-status="All">All Status</button>
+        <button class="filter-chip" data-filter-status="Pending">Pending</button>
+        <button class="filter-chip" data-filter-status="In Progress">In Progress</button>
+        <button class="filter-chip" data-filter-status="Completed">Completed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid of Issue Cards -->
+  <div class="issue-grid" id="reportsFeedGrid">
+    {% for r in reports %}
+    <div class="issue-card animate-fade-in">
+      <div class="issue-thumb-wrap">
+        <img src="{{ r.image_path or url_for('static', filename='uploads/pothole_crater.svg') }}" alt="{{ r.category }}" class="issue-thumb" loading="lazy">
+        <div class="issue-badges-overlay">
+          <span class="badge badge-priority-{{ r.priority|lower }}">
+            <span class="badge-dot"></span> {{ r.priority }} Priority
+          </span>
+          <span class="badge badge-status-{{ r.status|lower|replace(' ', '') }}">
+            {{ r.status }}
+          </span>
+        </div>
+        <div class="ai-score-pill">AI Confidence: {{ r.confidence_score }}%</div>
+      </div>
+
+      <div class="issue-body">
+        <div class="issue-category-tag">{{ r.category }} • Severity {{ r.severity_score }}/100</div>
+        <h3 class="issue-location">
+          <span>📍</span> {{ r.location_name }}
+        </h3>
+        <p class="issue-desc">{{ r.description }}</p>
+
+        <div class="issue-footer">
+          <div class="issue-meta-item">
+            <span>👤</span> {{ r.reporter_name }}
+          </div>
+          <div class="issue-meta-item">
+            <span>💬</span> {{ r.comment_count }} comments
+          </div>
+          <a href="{{ url_for('report_detail', report_id=r.id) }}" class="btn btn-outline-cyan btn-sm">Inspect &rarr;</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/feed.js') }}"></script>
+{% endblock %}

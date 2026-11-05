@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Citizen Dashboard - CivicTrack-AI{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 24px;">
+  
+  <!-- Dashboard Top Banner -->
+  <div style="background: var(--grad-surface); border: 1px solid var(--border-glass-glow); border-radius: var(--radius-lg); padding: 32px; margin-bottom: 36px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+    <div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom: 6px;">
+        <span class="badge badge-status-inprogress">{{ current_user.role }}</span>
+        <span style="color:var(--text-muted); font-size: 0.85rem;">Member since {{ current_user.created_at[:10] }}</span>
+      </div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; color: #fff;">
+        Welcome, {{ current_user.username }}!
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.95rem;">
+        Monitor your submitted civic reports, track repairs by municipal authorities, and plan safe journeys.
+      </p>
+    </div>
+
+    <!-- Quick Action Hub -->
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <a href="{{ url_for('report_issue') }}" class="btn btn-primary">
+        <i class="fas fa-camera"></i> Report Issue
+      </a>
+      <a href="{{ url_for('journey_planner') }}" class="btn btn-secondary">
+        <i class="fas fa-route"></i> Plan Journey
+      </a>
+      {% if current_user.role in ['Authority', 'Admin'] %}
+      <a href="{{ url_for('authority_dashboard') }}" class="btn btn-outline-cyan">
+        <i class="fas fa-building-columns"></i> Authority Control
+      </a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}" class="btn btn-secondary" title="Logout">
+        <i class="fas fa-power-off"></i> Logout
+      </a>
+    </div>
+  </div>
+
+  <!-- Interactive Live Map Section inside Dashboard Layout -->
+  <div style="margin-bottom: 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px;">
+          <span>🗺️</span> Regional Road Safety Map (Coimbatore)
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">
+          Dynamic OpenStreetMap telemetry. Markers show severity: Red (High), Orange (Medium), Yellow (Low), Green (Resolved).
+        </p>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button type="button" id="detectLocationBtn" class="btn btn-outline-cyan btn-sm">
+          <i class="fas fa-location-crosshairs"></i> Detect My Location
+        </button>
+        <span class="badge badge-status-inprogress" style="font-size:0.8rem;"><span class="badge-dot"></span> Live OSM Feed</span>
+      </div>
+    </div>
+
+    <div class="map-card-container">
+      <div id="homeLiveMap" class="map-wrapper" style="height: 440px;"></div>
+    </div>
+  </div>
+
+  <!-- Summary Stats Grid -->
+  <div class="stats-ribbon" style="margin-top: 0; margin-bottom: 40px;">
+    <div class="stat-card">
+      <div class="stat-icon cyan"><i class="fas fa-file-signature"></i></div>
+      <div>
+        <div class="stat-number">{{ my_reports|length }}</div>
+        <div class="stat-label">My Submitted Reports</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon emerald"><i class="fas fa-check-double"></i></div>
+      <div>
+        <div class="stat-number">
+          {{ my_reports|selectattr('status', 'equalto', 'Completed')|list|length }}
+        </div>
+        <div class="stat-label">Resolved by Authorities</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon amber"><i class="fas fa-hammer"></i></div>
+      <div>
+        <div class="stat-number">
+          {{ my_reports|selectattr('status', 'equalto', 'In Progress')|list|length }}
+        </div>
+        <div class="stat-label">Work In Progress</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon red"><i class="fas fa-triangle-exclamation"></i></div>
+      <div>
+        <div class="stat-number">
+          {{ my_reports|selectattr('priority', 'equalto', 'High')|list|length }}
+        </div>
+        <div class="stat-label">High Priority Hazards</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View My Reports Section -->
+  <div style="margin-bottom: 50px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px;">
+        <span>📋</span> My Road Reports
+      </h2>
+      <a href="{{ url_for('report_issue') }}" class="btn btn-outline-cyan btn-sm">
+        <i class="fas fa-plus"></i> Submit New Report
+      </a>
+    </div>
+
+    {% if my_reports|length == 0 %}
+      <div style="text-align: center; padding: 60px 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border-glass);">
+        <div style="font-size: 3rem; margin-bottom: 14px;">📸</div>
+        <h3 style="color: #fff; margin-bottom: 8px;">No reports filed yet</h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px; max-width: 480px; margin-left: auto; margin-right: auto;">
+          Spotted a dangerous pothole, broken divider, or open manhole? Report it now and CivicTrack-AI will evaluate its severity.
+        </p>
+        <a href="{{ url_for('report_issue') }}" class="btn btn-primary">Report Your First Issue</a>
+      </div>
+    {% else %}
+      <div class="issue-grid">
+        {% for r in my_reports %}
+        <div class="issue-card animate-fade-in">
+          <div class="issue-thumb-wrap">
+            <img src="{{ r.image_path or url_for('static', filename='uploads/pothole_crater.svg') }}" alt="{{ r.category }}" class="issue-thumb">
+            <div class="issue-badges-overlay">
+              <span class="badge badge-priority-{{ r.priority|lower }}">
+                <span class="badge-dot"></span> {{ r.priority }} Priority
+              </span>
+              <span class="badge badge-status-{{ r.status|lower|replace(' ', '') }}">
+                {{ r.status }}
+              </span>
+            </div>
+            <div class="ai-score-pill">AI Score: {{ r.severity_score }}/100</div>
+          </div>
+
+          <div class="issue-body">
+            <div class="issue-category-tag">{{ r.category }} • {{ r.created_at[:16] }}</div>
+            <h3 class="issue-location"><span>📍</span> {{ r.location_name }}</h3>
+            <p class="issue-desc">{{ r.description }}</p>
+
+            <div class="issue-footer">
+              <div class="issue-meta-item">
+                <span>💬</span> {{ r.comment_count }} updates
+              </div>
+              <a href="{{ url_for('report_detail', report_id=r.id) }}" class="btn btn-outline-cyan btn-sm">Track Status &rarr;</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Safe Journeys -->
+  {% if route_history|length > 0 %}
+  <div>
+    <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span>🚗</span> Recent Safe Journey Searches
+    </h3>
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Origin</th>
+            <th>Destination</th>
+            <th>Distance</th>
+            <th>Travel Time</th>
+            <th>Safety Level</th>
+            <th>Traffic</th>
+            <th>Tolls</th>
+            <th>Searched At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for route in route_history %}
+          <tr>
+            <td><b>{{ route.start_location }}</b></td>
+            <td><b>{{ route.destination }}</b></td>
+            <td>{{ route.distance or 'N/A' }}</td>
+            <td>{{ route.travel_time }}</td>
+            <td>
+              <span class="badge {% if route.safety_level == 'Safe' %}badge-status-completed{% elif route.safety_level == 'Moderate Risk' %}badge-priority-medium{% else %}badge-priority-high{% endif %}">
+                {{ route.safety_level }}
+              </span>
+            </td>
+            <td>{{ route.traffic_level }}</td>
+            <td>{{ route.toll_count }} Toll(s)</td>
+            <td style="color:var(--text-muted); font-size:0.8rem;">{{ route.created_at[:16] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/feed.js') }}"></script>
+{% endblock %}

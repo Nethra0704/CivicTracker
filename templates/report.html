@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Report Road Issue - CivicTrack-AI{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 24px; max-width: 980px;">
+  
+  <div style="margin-bottom: 28px;">
+    <span class="badge badge-status-inprogress" style="margin-bottom: 8px;">Civic Hazard Reporting</span>
+    <h1 style="font-size: 2.2rem; font-weight: 800; color: #fff;">
+      Report a Road Safety Issue
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+      Upload photos/videos of damaged infrastructure. Our AI engine will evaluate severity, assign priority, and notify local authorities.
+    </p>
+  </div>
+
+  <form method="POST" action="{{ url_for('report_issue') }}" enctype="multipart/form-data" class="form-card animate-fade-in">
+    
+    <!-- Step 1: Media Upload & Sample Presets -->
+    <div class="form-group">
+      <label class="form-label">
+        <span>📸</span> 1. Upload Hazard Photo / Video
+      </label>
+      
+      <!-- Drag & Drop Area -->
+      <div class="dropzone" id="mediaDropzone">
+        <input type="file" name="media_file" id="mediaFileInput" accept="image/*,video/*" style="display: none;">
+        <div class="dropzone-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+        <div style="font-weight: 600; font-size: 1rem; color: #fff; margin-bottom: 4px;">
+          Click to upload or drag & drop image/video
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">
+          Supports JPG, PNG, WEBP, MP4, MOV (Max 32MB)
+        </p>
+        <img id="mediaPreviewImg" class="dropzone-preview" alt="Selected Hazard Preview" src="/static/uploads/pothole_crater.svg" style="display: block; margin: 14px auto 0;">
+      </div>
+
+      <!-- Quick Sample Hazard Chooser for Hackathon Demo -->
+      <div style="margin-top: 14px;">
+        <label style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">
+          ⚡ Or Select a Test Hazard Preset (1-Click Demo):
+        </label>
+        <input type="hidden" name="sample_image" id="sampleImageChoice" value="pothole_crater.svg">
+        
+        <div class="sample-images-grid">
+          <div class="sample-img-card selected" data-sample-file="pothole_crater.svg" data-category="Pothole">
+            <img src="/static/uploads/pothole_crater.svg" alt="Pothole">
+            <div class="sample-img-label">Deep Crater</div>
+          </div>
+
+          <div class="sample-img-card" data-sample-file="waterlogging_flood.svg" data-category="Waterlogging">
+            <img src="/static/uploads/waterlogging_flood.svg" alt="Waterlogging">
+            <div class="sample-img-label">Waterlogging</div>
+          </div>
+
+          <div class="sample-img-card" data-sample-file="open_manhole.svg" data-category="Open Manhole">
+            <img src="/static/uploads/open_manhole.svg" alt="Open Manhole">
+            <div class="sample-img-label">Open Manhole</div>
+          </div>
+
+          <div class="sample-img-card" data-sample-file="broken_guardrail.svg" data-category="Broken Guardrail">
+            <img src="/static/uploads/broken_guardrail.svg" alt="Guardrail">
+            <div class="sample-img-label">Broken Guardrail</div>
+          </div>
+
+          <div class="sample-img-card" data-sample-file="road_cracks.svg" data-category="Road Crack">
+            <img src="/static/uploads/road_cracks.svg" alt="Road Cracks">
+            <div class="sample-img-label">Fatigue Cracks</div>
+          </div>
+
+          <div class="sample-img-card" data-sample-file="streetlight_outage.svg" data-category="Streetlight Outage">
+            <img src="/static/uploads/streetlight_outage.svg" alt="Streetlight">
+            <div class="sample-img-label">No Lighting</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Category & Description -->
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+      <div class="form-group">
+        <label class="form-label" for="reportCategory">Issue Category</label>
+        <select name="category" id="reportCategory" class="form-control" required>
+          <option value="Pothole">Pothole / Crater</option>
+          <option value="Waterlogging">Waterlogging / Flooding</option>
+          <option value="Open Manhole">Open Manhole / Drain</option>
+          <option value="Broken Guardrail">Broken Guardrail / Divider</option>
+          <option value="Road Crack">Severe Road Cracks</option>
+          <option value="Streetlight Outage">Streetlight Outage / Dark Zone</option>
+          <option value="Damaged Signage">Missing / Damaged Signage</option>
+          <option value="Other">Other Hazard</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reportDescription">
+          Detailed Description <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Keywords guide AI priority rating)</span>
+        </label>
+        <textarea name="description" id="reportDescription" class="form-control" rows="3" placeholder="Describe the size, depth, danger to two-wheelers, and exact landmark..." required>Deep 15cm crater across the middle lane right after the lake junction. Severe risk for two-wheelers.</textarea>
+      </div>
+    </div>
+
+    <!-- Step 3: Location Selection -->
+    <div class="form-group">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 10px;">
+        <label class="form-label" style="margin-bottom: 0;">
+          <span>📍</span> 3. Set Hazard Location
+        </label>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="useCurrentGpsBtn">
+            <i class="fas fa-location-crosshairs"></i> Detect My Location
+          </button>
+        </div>
+      </div>
+
+      <!-- Address Search Box -->
+      <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+        <input type="text" id="searchAddressInput" class="form-control" placeholder="Search address, landmark, or street name...">
+        <button type="button" class="btn btn-outline-cyan btn-sm" id="searchAddressBtn">Find</button>
+      </div>
+
+      <!-- Interactive Map for Click-to-Pin -->
+      <div class="map-card-container">
+        <div id="reportPickerMap" class="map-wrapper-picker"></div>
+      </div>
+
+      <!-- Resolved Location Feedback -->
+      <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <div id="readableLocationBadge" class="badge badge-status-inprogress" style="padding: 6px 12px; font-size: 0.85rem;">
+          <span>📍</span> <b>Resolved:</b> Avinashi Road, Coimbatore, Tamil Nadu
+        </div>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">
+          Tip: Click anywhere on the map to fine-tune pin position
+        </span>
+      </div>
+
+      <!-- Hidden Form Inputs for Submission -->
+      <input type="hidden" name="latitude" id="reportLat" value="11.0168">
+      <input type="hidden" name="longitude" id="reportLon" value="76.9558">
+      <input type="hidden" name="location_name" id="reportLocationName" value="Avinashi Road, Coimbatore, Tamil Nadu">
+    </div>
+
+    <!-- Step 4: Live AI Severity Preview Box -->
+    <div class="ai-preview-box" id="aiPreviewContainer">
+      <div class="ai-preview-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size: 1.2rem;">🤖</span>
+          <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">CivicTrack-AI Pre-Assessment:</span>
+        </div>
+        <span id="aiPreviewPriorityBadge" class="badge badge-priority-high">
+          <span class="badge-dot"></span> AI: High Priority
+        </span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary);">
+        <span>Severity Index: <b id="aiPreviewScore" style="color:#fff;">94/100</b></span>
+        <span>Confidence: <b id="aiPreviewConfidence" style="color:var(--accent-cyan);">96.4%</b></span>
+      </div>
+
+      <div class="ai-confidence-bar">
+        <div class="ai-confidence-fill" id="aiPreviewConfidenceFill" style="width: 96.4%;"></div>
+      </div>
+
+      <div style="font-size: 0.85rem; color: var(--text-secondary);">
+        <b style="color: #fff;">Detected Hazard Indicators:</b>
+        <ul id="aiPreviewHazardsList" style="padding-left: 20px; margin-top: 4px; font-size: 0.8rem; line-height: 1.5;">
+          <li>High surface variance / deep shadows detected</li>
+          <li>Sharp edge fractures & structural asphalt cracks detected</li>
+          <li>Critical vehicle suspension & two-wheeler skid hazard</li>
+        </ul>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.8rem;">
+        <span style="color: var(--accent-cyan); font-weight: 700;">Recommended Civil Action:</span>
+        <span id="aiPreviewAction" style="color: #e2e8f0; margin-left: 4px;">Immediate physical barricade and emergency asphalt patching within 24 hours.</span>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 26px;">
+      <i class="fas fa-paper-plane"></i> Submit Official Report to Authorities
+    </button>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}
